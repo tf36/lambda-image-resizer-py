@@ -16,16 +16,17 @@ def lambda_handler(event, context):
   obj_key = str(s3_event['object']['key'])
   filename = obj_key.split('/')[1]
   
-  tmp_file = '/tmp/{}.jpg'.format(re.sub(r'[\.:\s-]', '', str(datetime.now())))
-  with open(tmp_file, 'wb') as data:
+  org_tmp_file = '/tmp/{}.jpg'.format(re.sub(r'[\.:\s-]', '', str(datetime.now())))
+  with open(org_tmp_file, 'wb') as data:
     # pull down original
     s3.Bucket(bucket).download_fileobj(obj_key, data)
     
   for size in sizes:
     tw = int(size.split('x')[0].strip())
     th = int(size.split('x')[1].strip())
+    tmp_file = '{}{}{}.jpg'.format(org_tmp_file.split('.')[0], tw, th)
 
-    image = Image.open(tmp_file)
+    image = Image.open(org_tmp_file)
     image_format = image.format
     image = rotate_img(image)
     w, h = image.size
